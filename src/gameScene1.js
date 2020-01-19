@@ -7,6 +7,12 @@ class GameScene extends Phaser.Scene {
             key: 'game'
         });
         this.xCursors = null;
+        this.xPlayer = null;
+        this.xStars = null;
+        this.xScore = 0;
+        this.xScoreText = '';
+        this.xGameOver = false;
+        this.xBombs = null;
     }
 
     init(data) { }
@@ -22,12 +28,12 @@ class GameScene extends Phaser.Scene {
         platforms.create(50, 250, 'ground');
         platforms.create(750, 220, 'ground');
 
-        let player = this.physics.add.sprite(100, 450, 'dude');
+        this.xPlayer = this.physics.add.sprite(100, 450, 'dude');
 
-        player.setBounce(0.2);
-        player.setCollideWorldBounds(true);
+        this.xPlayer.setBounce(0.2);
+        this.xPlayer.setCollideWorldBounds(true);
 
-        player.body.setGravityY(300)
+        this.xPlayer.body.setGravityY(300)
 
         this.anims.create({
             key: 'left',
@@ -52,49 +58,79 @@ class GameScene extends Phaser.Scene {
 
         this.xCursors = this.input.keyboard.createCursorKeys();
 
-        stars = this.physics.add.group({
+        this.xStars = this.physics.add.group({
             key: 'star',
             repeat: 11,
             setXY: { x: 12, y: 0, stepX: 70 }
         });
 
-        stars.children.iterate(function (child) {
+        this.xStars.children.iterate(function (child) {
             child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
         });
 
-        scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
+        this.xScoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
 
-        bombs = this.physics.add.group();
+        this.xBombs = this.physics.add.group();
 
-        this.physics.add.collider(bombs, platforms);
-        this.physics.add.collider(player, bombs, hitBomb, null, this);
+        this.physics.add.collider(this.xBombs, platforms);
+        this.physics.add.collider(this.xPlayer, this.xBombs, this.hitBomb, null, this);
 
-        this.physics.add.collider(player, platforms);
-        this.physics.add.collider(stars, platforms);
-        this.physics.add.overlap(player, stars, collectStar, null, this);
+        this.physics.add.collider(this.xPlayer, platforms);
+        this.physics.add.collider(this.xStars, platforms);
+        this.physics.add.overlap(this.xPlayer, this.xStars, this.collectStar, null, this);
     }
     update(time, delta) {
         if (this.xCursors.left.isDown) {
-            player.setVelocityX(-160);
+            this.xPlayer.setVelocityX(-160);
 
-            player.anims.play('left', true);
+            this.xPlayer.anims.play('left', true);
         }
         else if (this.xCursors.right.isDown) {
-            player.setVelocityX(160);
+            this.xPlayer.setVelocityX(160);
 
-            player.anims.play('right', true);
+            this.xPlayer.anims.play('right', true);
         }
         else {
-            player.setVelocityX(0);
+            this.xPlayer.setVelocityX(0);
 
-            player.anims.play('turn');
+            this.xPlayer.anims.play('turn');
         }
 
-        if (this.xCursors.up.isDown && player.body.touching.down) {
-            player.setVelocityY(-550);
+        if (this.xCursors.up.isDown && this.xPlayer.body.touching.down) {
+            this.xPlayer.setVelocityY(-550);
         }
     }
 
+    hitBomb(player, bomb) {
+        this.physics.pause();
+        player.setTint(0xff0000);
+        player.anims.play('turn');
+        this.xGameOver = true;
+    }
+
+    collectStar(player, star) {
+        star.disableBody(true, true);
+        this.xScore += 10;
+        this.xScoreText.setText('Score: ' + this.xScore);
+
+        if (this.xStars.countActive(true) === 0) {
+            this.xStars.children.iterate(function (child) {
+
+                child.enableBody(true, child.x, 0, true, true);
+
+            });
+
+            let x = (player.x < 400) ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0, 400);
+
+            let bomb = this.xBombs.create(x, 16, 'bomb');
+            bomb.setBounce(1);
+            bomb.setCollideWorldBounds(true);
+            bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
+
+        }
+
+    }
 }
+
 export default GameScene;
 
