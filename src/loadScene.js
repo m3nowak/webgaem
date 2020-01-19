@@ -5,6 +5,16 @@ import starImg from './assets/star.png'
 import bombImg from './assets/bomb.png'
 import dudeSS from './assets/dude.png'
 
+import menuBgImg from './assets/menuBg.png'
+import playBtnImg from './assets/playBtn.png'
+import playBtnActiveImg from './assets/playBtnActive.png'
+import logoImg from './assets/logo.png'
+import bgmSnd from './assets/bgm.mp3'
+import oofSnd from './assets/oof.mp3'
+import pointSnd from './assets/point.mp3'
+import lvlUpSnd from './assets/lvlUp.mp3'
+import jumpSnd from './assets/jump.mp3'
+
 class LoadScene extends Phaser.Scene {
     constructor() {
         super({
@@ -29,9 +39,18 @@ class LoadScene extends Phaser.Scene {
             dudeSS,
             { frameWidth: 32, frameHeight: 48 }
         );
+        this.load.image('menuBg', menuBgImg);
+        this.load.image('playBtn', playBtnImg);
+        this.load.image('playBtnActive', playBtnActiveImg);
+        this.load.image('logo', logoImg);
+        this.load.audio('bgm', bgmSnd);
+        this.load.audio('point', pointSnd);
+        this.load.audio('oof', oofSnd);
+        this.load.audio('lvlUp', lvlUpSnd);
+        this.load.audio('jump', jumpSnd);
     }
     create() {
-        this.scene.start("game");
+        this.scene.start("menu");
     }
 }
 

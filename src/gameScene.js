@@ -19,6 +19,7 @@ class GameScene extends Phaser.Scene {
     preload() { }
 
     create(data) {
+        this.xGameOver = false;
         this.add.image(400, 300, 'sky');
 
         let platforms = this.physics.add.staticGroup();
@@ -83,20 +84,19 @@ class GameScene extends Phaser.Scene {
         if (this.xCursors.left.isDown) {
             this.xPlayer.setVelocityX(-160);
 
-            this.xPlayer.anims.play('left', true);
+            if(!this.xGameOver) this.xPlayer.anims.play('left', true);
         }
         else if (this.xCursors.right.isDown) {
             this.xPlayer.setVelocityX(160);
-
-            this.xPlayer.anims.play('right', true);
+            if(!this.xGameOver) this.xPlayer.anims.play('right', true);
         }
         else {
             this.xPlayer.setVelocityX(0);
-
-            this.xPlayer.anims.play('turn');
+            if(!this.xGameOver) this.xPlayer.anims.play('turn');
         }
 
         if (this.xCursors.up.isDown && this.xPlayer.body.touching.down) {
+            this.sound.play('jump', {loop: false});
             this.xPlayer.setVelocityY(-550);
         }
     }
@@ -105,7 +105,11 @@ class GameScene extends Phaser.Scene {
         this.physics.pause();
         player.setTint(0xff0000);
         player.anims.play('turn');
+        this.sound.play('oof', {loop: false});
         this.xGameOver = true;
+        setTimeout(()=>{
+            this.scene.start("menu");
+        },1500);
     }
 
     collectStar(player, star) {
@@ -126,7 +130,11 @@ class GameScene extends Phaser.Scene {
             bomb.setBounce(1);
             bomb.setCollideWorldBounds(true);
             bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
-
+            
+            this.sound.play('lvlUp', {loop: false});
+        }
+        else {
+            this.sound.play('point', {loop: false});
         }
 
     }
