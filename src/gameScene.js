@@ -13,6 +13,8 @@ class GameScene extends Phaser.Scene {
         this.xScoreText = '';
         this.xGameOver = false;
         this.xBombs = null;
+        this.xBonuses = null;
+        this.xLevel = 0;
     }
 
     init(data) { }
@@ -20,6 +22,8 @@ class GameScene extends Phaser.Scene {
 
     create(data) {
         this.xGameOver = false;
+        this.xScore = 0;
+        this.xLevel = 0;
         this.add.image(400, 300, 'sky');
 
         let platforms = this.physics.add.staticGroup();
@@ -31,7 +35,7 @@ class GameScene extends Phaser.Scene {
 
         this.xPlayer = this.physics.add.sprite(100, 450, 'dude');
 
-        this.xPlayer.setBounce(0.2);
+        this.xPlayer.setBounce(0);
         this.xPlayer.setCollideWorldBounds(true);
 
         this.xPlayer.body.setGravityY(300)
@@ -69,6 +73,8 @@ class GameScene extends Phaser.Scene {
             child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
         });
 
+        this.xBonuses = this.physics.add.group();
+
         this.xScoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
 
         this.xBombs = this.physics.add.group();
@@ -79,24 +85,27 @@ class GameScene extends Phaser.Scene {
         this.physics.add.collider(this.xPlayer, platforms);
         this.physics.add.collider(this.xStars, platforms);
         this.physics.add.overlap(this.xPlayer, this.xStars, this.collectStar, null, this);
+
+        this.physics.add.collider(this.xBonuses, platforms);
+        this.physics.add.overlap(this.xPlayer, this.xBonuses, this.collectBonus, null, this);
     }
     update(time, delta) {
         if (this.xCursors.left.isDown) {
             this.xPlayer.setVelocityX(-160);
 
-            if(!this.xGameOver) this.xPlayer.anims.play('left', true);
+            if (!this.xGameOver) this.xPlayer.anims.play('left', true);
         }
         else if (this.xCursors.right.isDown) {
             this.xPlayer.setVelocityX(160);
-            if(!this.xGameOver) this.xPlayer.anims.play('right', true);
+            if (!this.xGameOver) this.xPlayer.anims.play('right', true);
         }
         else {
             this.xPlayer.setVelocityX(0);
-            if(!this.xGameOver) this.xPlayer.anims.play('turn');
+            if (!this.xGameOver) this.xPlayer.anims.play('turn');
         }
 
         if (this.xCursors.up.isDown && this.xPlayer.body.touching.down) {
-            this.sound.play('jump', {loop: false});
+            this.sound.play('jump', { loop: false });
             this.xPlayer.setVelocityY(-550);
         }
     }
@@ -105,11 +114,18 @@ class GameScene extends Phaser.Scene {
         this.physics.pause();
         player.setTint(0xff0000);
         player.anims.play('turn');
-        this.sound.play('oof', {loop: false});
+        this.sound.play('oof', { loop: false });
         this.xGameOver = true;
-        setTimeout(()=>{
+        setTimeout(() => {
             this.scene.start("menu");
-        },1500);
+        }, 1500);
+    }
+
+    collectBonus(player, bonus) {
+        bonus.disableBody(true, true);
+        this.xScore += 100;
+        this.xScoreText.setText('Score: ' + this.xScore);
+        this.sound.play('point', { loop: false });
     }
 
     collectStar(player, star) {
@@ -118,9 +134,16 @@ class GameScene extends Phaser.Scene {
         this.xScoreText.setText('Score: ' + this.xScore);
 
         if (this.xStars.countActive(true) === 0) {
+            this.xLevel += 1;
             this.xStars.children.iterate(function (child) {
 
                 child.enableBody(true, child.x, 0, true, true);
+
+            });
+
+            this.xBonuses.children.iterate(function (child) {
+
+                child.disableBody(true, true);
 
             });
 
@@ -130,14 +153,30 @@ class GameScene extends Phaser.Scene {
             bomb.setBounce(1);
             bomb.setCollideWorldBounds(true);
             bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
-            
-            this.sound.play('lvlUp', {loop: false});
+
+            let pos = random_item(bonusPos);
+            let bonus = this.xBonuses.create(pos.x, pos.y, 'bonus');
+            bonus.setCollideWorldBounds(true);
+
+            this.sound.play('lvlUp', { loop: false });
         }
         else {
-            this.sound.play('point', {loop: false});
+            this.sound.play('point', { loop: false });
         }
 
     }
+}
+
+let bonusPos = [
+    { x: 30, y: 420 },
+    { x: 180, y: 130 },
+    { x: 400, y: 240 }
+]
+
+function random_item(items) {
+
+    return items[Math.floor(Math.random() * items.length)];
+
 }
 
 export default GameScene;

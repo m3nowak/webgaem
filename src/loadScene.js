@@ -9,6 +9,7 @@ import menuBgImg from './assets/menuBg.png'
 import playBtnImg from './assets/playBtn.png'
 import playBtnActiveImg from './assets/playBtnActive.png'
 import logoImg from './assets/logo.png'
+import bonusImg from './assets/bonus.png'
 import bgmSnd from './assets/bgm.mp3'
 import oofSnd from './assets/oof.mp3'
 import pointSnd from './assets/point.mp3'
@@ -43,6 +44,7 @@ class LoadScene extends Phaser.Scene {
         this.load.image('playBtn', playBtnImg);
         this.load.image('playBtnActive', playBtnActiveImg);
         this.load.image('logo', logoImg);
+        this.load.image('bonus', bonusImg);
         this.load.audio('bgm', bgmSnd);
         this.load.audio('point', pointSnd);
         this.load.audio('oof', oofSnd);
